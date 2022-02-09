@@ -42,7 +42,7 @@
 #include "TVector2.h"
 #include "TVector3.h"
 #include "TLorentzVector.h"
-#include "TGeoHMatrix.h"
+#include "TGeoMatrix.h"
 #endif
 
 #include "StPhysicalHelix.h"
@@ -87,12 +87,12 @@ int main(int argc, char **argv)
   const TVector3 origin(0., 10., 0.);
   const Double_t thetaP = 0.;  // angle w.r.t Y-axis going down wards - cosmic ray
   const Double_t momP = 3.0; // 3.0 GeV
-  doublex pyP = - momP * TMath::Cos(thetaP);
+  Double_t pyP = - momP * TMath::Cos(thetaP);
 
   TRandom3 *gRandom = new TRandom3();
   Double_t phi_xz = gRandom->Rndm()*TMath::Pi()*2.;  // phi in x-z plane
-  double pxP = momP * TMath::Sin(thetaP) * TMath::Cos(phi_xz);
-  double pzP = momP * TMath::Sin(thetaP) * TMath::Sin(phi_xz);
+  Double_t pxP = momP * TMath::Sin(thetaP) * TMath::Cos(phi_xz);
+  Double_t pzP = momP * TMath::Sin(thetaP) * TMath::Sin(phi_xz);
   TVector3 pmom(pxP, pyP, pzP);
 
   StPhysicalHelix cosmicRay(pmom, origin, 0, 0);

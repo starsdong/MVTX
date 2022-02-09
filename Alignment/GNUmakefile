@@ -1,5 +1,5 @@
-OBJS = StPhysicalHelix.o StHelix.o $1.o
-EXE = $1
+OBJS = StPhysicalHelix.o StHelix.o FastMC.o
+EXE = FastMC
 
 ROOTCFLAGS    = $(shell root-config --cflags)
 ROOTLIBS      = $(shell root-config --libs)
