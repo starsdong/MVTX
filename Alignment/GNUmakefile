@@ -2,8 +2,8 @@ OBJS = StPhysicalHelix.o StHelix.o FastMC.o
 EXE = FastMC
 
 ROOTCFLAGS    = $(shell root-config --cflags)
-ROOTLIBS      = $(shell root-config --libs)
-ROOTGLIBS     = $(shell root-config --glibs)
+ROOTLIBS      = $(shell root-config --libs) -lGeom
+ROOTGLIBS     = $(shell root-config --glibs) -lGeom
 
 INCFLAGS = -I$(ROOTSYS)/include
 LDFLAGS = -L$(ROOTSYS)/lib
