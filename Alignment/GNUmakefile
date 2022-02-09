@@ -1,5 +1,5 @@
-OBJS = StPhysicalHelix.o StHelix.o analysis.o
-EXE = analysis
+OBJS = StPhysicalHelix.o StHelix.o $1.o
+EXE = $1
 
 ROOTCFLAGS    = $(shell root-config --cflags)
 ROOTLIBS      = $(shell root-config --libs)
