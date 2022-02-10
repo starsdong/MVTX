@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 
   for(int i=0;i<mTree->GetEntries();i++) {
     mTree->GetEntry(i);
-    std::cout << " nh = " << mT.nh << std::endl;
+    if(i%10000==0) std::cout << " nh = " << mT.nh << std::endl;
 
     if(mT.nh<3) continue;   // at least 3 hits
 
@@ -167,6 +167,9 @@ int main(int argc, char **argv)
 	  double hitG_proj[3] = {track.x(s), track.y(s), track.z(s)};
 	  double hitL_proj[3] = {-999., -999., -999.};
 	  stave[il][is]->MasterToLocal(hitG_proj, hitL_proj);
+	  TVector3 hit_proj(hitL_proj[0], hitL_proj[1], hitL_proj[2]);
+	  if(!onStave(hit_proj)) continue;
+	  
 
 	  hResXvsZ[il][is]->Fill(mT.zG_rc[i_p3], mT.xG_rc[i_p3] - hitG_proj[0]);
 	  hResYvsZ[il][is]->Fill(mT.zG_rc[i_p3], mT.yG_rc[i_p3] - hitG_proj[1]);
