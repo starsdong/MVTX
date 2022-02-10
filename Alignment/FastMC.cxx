@@ -68,12 +68,16 @@ int main(int argc, char **argv)
 
   std::cout << " Reading in Stave Geometry Tables ... " << std::endl;
   TGeoHMatrix *stave[NL][NSMAX];
-  TFile *fin = new TFile("StaveGeoMatrix_Ideal.root");
+  TGeoHMatrix *staveP[NL][NSMAX];
+  TFile *fin = new TFile("StaveGeoMatrix.root");
   for(int i=0;i<NL;i++) {
     for(int j=0;j<NS[i];j++) {
       std::cout << Form("geoM_%d_%d",i,j) << std::endl;
       stave[i][j] = (TGeoHMatrix *)fin->Get(Form("geoM_%d_%d",i,j));
       stave[i][j]->Print();
+      staveP[i][j] = (TGeoHMatrix *)fin->Get(Form("geoM_mis_%d_%d",i,j));
+      //staveP[i][j] = (TGeoHMatrix *)fin->Get(Form("geoM_%d_%d",i,j));
+      staveP[i][j]->Print();
     }
   }
   fin->Close();
@@ -145,16 +149,16 @@ int main(int argc, char **argv)
     int nh = 0;
     for(int i=NL-1;i>=0;i--) {  // going from most outer layer
       for(int j=0;j<NS[i];j++) {
-	double *tra = stave[i][j]->GetTranslation();
-	double *rot = stave[i][j]->GetRotationMatrix();
+	double *tra = staveP[i][j]->GetTranslation();  // MC should use the realistic geometry - mis-aligned
+	double *rot = staveP[i][j]->GetRotationMatrix();
 	
-	TVector3 ori(tra[0], tra[1], tra[3]);
+	TVector3 ori(tra[0], tra[1], tra[2]);
 	TVector3 norm(rot[1], rot[4], rot[7]); // normal direction of the plane
 	double s = cosmicRay.pathLength(ori, norm);
 	if(s<0) continue;  // cannot go backwards
 	double hitG_mc[3] = {cosmicRay.x(s), cosmicRay.y(s), cosmicRay.z(s)};
 	double hitL_mc[3] = {-999., -999., -999.};
-	stave[i][j]->MasterToLocal(hitG_mc, hitL_mc);
+	staveP[i][j]->MasterToLocal(hitG_mc, hitL_mc);    // MC should use the realistic geometry - mis-aligned
 	TVector3 hit_mc(hitL_mc[0], hitL_mc[1], hitL_mc[2]);
 	
 	if(!onStave(hit_mc)) continue;
@@ -169,7 +173,7 @@ int main(int argc, char **argv)
 	hitL_rc[1] = 0.;
 	hitL_rc[2] = gRandom->Gaus(hitL_mc[2], PitchSize/sqrt(12.));
 	double hitG_rc[3] = {-999., -999., -999.};
-	stave[i][j]->LocalToMaster(hitL_rc, hitG_rc);
+	stave[i][j]->LocalToMaster(hitL_rc, hitG_rc);    // Rec - first step no knowledge, start with ideal geometry
 	
 	mT.id[nh] = i * 100 + j;
 	mT.xL_mc[nh] = hitL_mc[0];
