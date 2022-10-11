@@ -1,0 +1,189 @@
+void makeSignificance()
+{
+  gROOT->LoadMacro("sPhenixStyle.C");
+  SetsPhenixStyle();
+
+  TFile *fin = new TFile("RAA_Ave.root");
+  TGraph *gr_D = (TGraph *)fin->Get("RAA_D");
+  TGraph *gr_B = (TGraph *)fin->Get("RAA_B");
+  TGraph *gr_pi = (TGraph *)fin->Get("RAA_pi");
+  TGraph *gr_D_B = (TGraph *)fin->Get("RAA_D0_B");
+  fin->Close();
+
+  // TFile *fin = new TFile("root/significance.root");
+  // TGraph *gr_sig_D_Cen = (TGraph *)fin->Get("sig_d0_Cen_noPid");
+  // TGraph *gr_sig_D_B_Cen = (TGraph *)fin->Get("sig_d0_B_Cen_noPid");
+  // TGraph *gr_sig_D_Peri = (TGraph *)fin->Get("sig_d0_Peri_noPid");
+  // TGraph *gr_sig_D_B_Peri = (TGraph *)fin->Get("sig_d0_B_Peri_noPid");
+  // TGraph *gr_sig_D_Cen = new TGraph("dat/SigPromptD0_0_10.txt","%lg %lg");
+  // TGraph *gr_sig_D_B_Cen = new TGraph("dat/SigNonPromptD0_0_10.txt","%lg %lg");
+  // TGraph *gr_sig_D_Peri = new TGraph("dat/SigPromptD0_60_80.txt","%lg %lg");
+  // TGraph *gr_sig_D_B_Peri = new TGraph("dat/SigNonPromptD0_60_80.txt","%lg %lg");
+  TFile *fin = new TFile("D0_significance.root");
+  TGraph *gr_sig_D_Cen = (TGraph *)fin->Get("gProD0_0_10_noPid");
+  TGraph *gr_sig_D_B_Cen = (TGraph *)fin->Get("gNonProD0_0_10_noPid");
+  TGraph *gr_sig_D_Peri = (TGraph *)fin->Get("gProD0_60_80_noPid");
+  TGraph *gr_sig_D_B_Peri = (TGraph *)fin->Get("gNonProD0_60_80_noPid");
+  
+  //  const Double_t Nevt_scale = 240./100.;  // Projections were calcualted based on 100B mb events, scaled to 240B, June 26, 2017
+  const Double_t Nevt_scale = 1.0 ;// new significance.root file was calculated based on 240B mb, June 29, 2017
+
+  
+  // for projections Rcp
+  const Int_t N_D = 20;
+  double pT_D[N_D], Rcp_D[N_D], Rcp_err_D[N_D];
+  const Int_t N_D_B = 10;
+  double pT_D_B[N_D_B], Rcp_D_B[N_D_B], Rcp_err_D_B[N_D_B];
+
+  for(int i=0;i<N_D;i++) {
+    pT_D[i] = (i+0.5)*10./N_D;
+    Rcp_D[i] = gr_D->Eval(pT_D[i]);
+    double err_cen = 1./(gr_sig_D_Cen->Eval(pT_D[i])/sqrt(N_D/10.));
+    double err_peri = 1./(gr_sig_D_Peri->Eval(pT_D[i])/sqrt(N_D/10.));
+    Rcp_err_D[i] = sqrt(err_cen*err_cen+err_peri*err_peri)*Rcp_D[i] / sqrt(Nevt_scale);
+  }
+
+  TGraphErrors *gr_proj_D = new TGraphErrors(N_D, pT_D, Rcp_D, 0, Rcp_err_D);
+  gr_proj_D->SetMarkerSize(1.5);
+  gr_proj_D->SetMarkerColor(4);
+  gr_proj_D->SetMarkerStyle(20);
+  gr_proj_D->SetLineWidth(2.);
+  gr_proj_D->SetLineColor(4);
+
+  for(int i=0;i<N_D_B;i++) {
+    pT_D_B[i] = (i+0.5)*10./N_D_B;
+    Rcp_D_B[i] = gr_D_B->Eval(pT_D_B[i]);
+    double err_cen = 1./(gr_sig_D_B_Cen->Eval(pT_D_B[i])/sqrt(N_D_B/10.))/sqrt(Rcp_D_B[i]);  // values were estimated assuming RAA(B)=1, additional Rcp_D_B[i] factor considering the NMF
+    double err_peri = 1./(gr_sig_D_B_Peri->Eval(pT_D_B[i])/sqrt(N_D_B/10.));
+    Rcp_err_D_B[i] = sqrt(err_cen*err_cen+err_peri*err_peri)*Rcp_D_B[i] / sqrt(Nevt_scale);
+  }
+
+  TGraphErrors *gr_proj_D_B = new TGraphErrors(N_D_B-2, pT_D_B+2, Rcp_D_B+2, 0, Rcp_err_D_B+2);
+  gr_proj_D_B->SetMarkerSize(1.5);
+  gr_proj_D_B->SetMarkerColor(2);
+  gr_proj_D_B->SetMarkerStyle(20);
+  gr_proj_D_B->SetLineWidth(2.);
+  gr_proj_D_B->SetLineColor(2);
+  
+  TCanvas *c1 = new TCanvas("c1", "c1",0,0,800,800);
+  // gStyle->SetOptFit(0);
+  // gStyle->SetOptStat(0);
+  // gStyle->SetEndErrorSize(0.01);
+  // c1->SetFillColor(10);
+  // c1->SetBorderMode(0);
+  // c1->SetBorderSize(2);
+  // c1->SetFrameFillColor(0);
+  // c1->SetFrameBorderMode(0);
+  
+  // // c1->SetGridx();
+  // // c1->SetGridy();
+  // c1->SetTickx();
+  // c1->SetTicky();
+  
+  // //  c1->SetLogx();
+  c1->SetLogy();
+  
+  // c1->SetLeftMargin(0.13);
+  // c1->SetBottomMargin(0.16);
+  // c1->SetTopMargin(0.02);
+  // c1->SetRightMargin(0.06);
+  
+  double x1 = 0.1;
+  double x2 = 11;
+  double y1 = 3.;
+  double y2 = 1e4;
+
+  TH1D *d0 = new TH1D("d0","",1,x1,x2);
+  d0->SetMinimum(y1);
+  d0->SetMaximum(y2);
+  // d0->GetXaxis()->SetNdivisions(208);
+  // d0->GetXaxis()->CenterTitle();
+  d0->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  // d0->GetXaxis()->SetTitleOffset(1.2);
+  // d0->GetXaxis()->SetTitleSize(0.06);
+  // d0->GetXaxis()->SetLabelOffset(0.01);
+  // d0->GetXaxis()->SetLabelSize(0.045);
+  // d0->GetXaxis()->SetLabelFont(42);
+  // d0->GetXaxis()->SetTitleFont(42);
+  // d0->GetYaxis()->SetNdivisions(505);
+  // d0->GetYaxis()->CenterTitle();
+  d0->GetYaxis()->SetTitle("Significance S/#sqrt{S+B}");
+  // d0->GetYaxis()->SetTitleOffset(1.0);
+  // d0->GetYaxis()->SetTitleSize(0.06);
+  // d0->GetYaxis()->SetLabelOffset(0.005);
+  // d0->GetYaxis()->SetLabelSize(0.045);
+  // d0->GetYaxis()->SetLabelFont(42);
+  // d0->GetYaxis()->SetTitleFont(42);
+  // d0->SetLineWidth(2);
+  d0->Draw();
+
+  // TLine *l1 = new TLine(x1,y1,x2,y1);
+  // l1->SetLineWidth(3);
+  // l1->Draw("same");
+  // TLine *l2 = new TLine(x1,y2,x2,y2);
+  // l2->SetLineWidth(3);
+  // l2->Draw("same");
+  // TLine *l3 = new TLine(x1,y1,x1,y2);
+  // l3->SetLineWidth(3);
+  // l3->Draw("same");
+  // TLine *l4 = new TLine(x2,y1,x2,y2);
+  // l4->SetLineWidth(3);
+  // l4->Draw("same");
+
+  gr_sig_D_Cen->SetLineColor(4);
+  gr_sig_D_Cen->SetLineWidth(2);
+  gr_sig_D_Cen->SetMarkerColor(4);
+  gr_sig_D_Cen->SetMarkerSize(1.5);
+  gr_sig_D_Cen->Draw("p");
+    
+  gr_sig_D_B_Cen->SetLineColor(1);
+  gr_sig_D_B_Cen->SetLineWidth(2);
+  gr_sig_D_B_Cen->SetMarkerColor(1);
+  gr_sig_D_B_Cen->SetMarkerSize(1.8);
+  gr_sig_D_B_Cen->Draw("p");
+				       
+  /*
+  gr_sig_D_Peri->SetLineColor(4);
+  gr_sig_D_Peri->SetLineWidth(2);
+  gr_sig_D_Peri->SetMarkerColor(4);
+  gr_sig_D_Peri->SetMarkerStyle(20);
+  gr_sig_D_Peri->SetMarkerSize(1.5);
+  gr_sig_D_Peri->Draw("p");
+    
+  gr_sig_D_B_Peri->SetLineStyle(3);
+  gr_sig_D_B_Peri->SetLineColor(2);
+  gr_sig_D_B_Peri->SetLineWidth(2);
+  gr_sig_D_B_Peri->SetMarkerColor(2);
+  gr_sig_D_B_Peri->SetMarkerStyle(20);
+  gr_sig_D_B_Peri->SetMarkerSize(1.5);
+  gr_sig_D_B_Peri->Draw("p");
+  */
+  TLegend *leg = new TLegend(0.45, 0.76, 0.92, 0.94);
+  // leg->SetFillColor(10);
+  // leg->SetFillStyle(10);
+  // leg->SetLineStyle(4000);
+  // leg->SetLineColor(10);
+  // leg->SetLineWidth(0.);
+  // leg->SetTextFont(42);
+  leg->SetTextSize(0.04);
+  leg->AddEntry("","#it{#bf{sPHENIX}} Simulation","");
+  leg->AddEntry("","Au+Au #sqrt{s_{NN}}=200 GeV","");
+  leg->AddEntry("","                 24B 0-10%","");
+  leg->Draw();
+  
+  TLegend *leg = new TLegend(0.72, 0.62, 0.94, 0.74);
+  // leg->SetFillColor(10);
+  // leg->SetFillStyle(10);
+  // leg->SetLineStyle(4000);
+  // leg->SetLineColor(10);
+  // leg->SetLineWidth(0.);
+  // leg->SetTextFont(42);
+  leg->SetTextSize(0.035);
+  leg->AddEntry(gr_sig_D_Cen,"Prompt D^{0}","p");
+  leg->AddEntry(gr_sig_D_B_Cen,"D^{0} from B","p");
+  leg->Draw();
+
+  c1->SaveAs("fig/Significance_proj_240B.eps");
+  c1->SaveAs("fig/Significance_proj_240B.png");
+  
+}

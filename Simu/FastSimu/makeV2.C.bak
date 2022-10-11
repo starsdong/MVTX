@@ -1,0 +1,194 @@
+Double_t v2_err(Double_t sig, Double_t v2, Double_t Res)
+{
+  const Double_t Pi = 3.1415927;
+  return Pi/4./sig/sqrt(1-16*v2*v2/Pi/Pi)/Res;
+}
+
+void makeV2()
+{
+  gROOT->Reset();
+
+
+  // TFile *fin = new TFile("root/significance.root");
+  // TGraph *gr_sig_D_MB = (TGraph *)fin->Get("sig_d0_MB_noPid");
+  // TGraph *gr_sig_D_B_MB = (TGraph *)fin->Get("sig_d0_B_MB_noPid");
+  // fin->Close();
+  TGraph *gr_sig_D_MB = new TGraph("dat/SigPromptD0_0_80.txt","%lg %lg");
+  TGraph *gr_sig_D_B_MB = new TGraph("dat/SigNonPromptD0_0_80.txt","%lg %lg");
+  
+  TFile *fin = new TFile("my_D0_v2.root");
+  TF1 *v2_D_fit = (TF1 *)fin->Get("fun_tamu_fit");  // stop at 6 GeV/c, assuming linear decrease to 0.02 @ 10 GeV/c
+  fin->Close();
+
+  const Double_t EPRes = 0.7;
+  // for projections v2
+  const Int_t N_D = 20;
+  double pT_D[N_D], v2_D[N_D], v2_D_0[N_D], v2_err_D[N_D];
+  const Int_t N_B = 20;
+  double pT_B[N_B], v2_B[N_B];
+  const Int_t N_D_B = 10;
+  double pT_D_B[N_D_B], v2_D_B[N_D_B], v2_err_D_B[N_D_B];
+
+  const Double_t MassD = 1.865;
+  const Double_t MassB = 5.279;
+  for(int i=0;i<N_D;i++) {
+    pT_D[i] = (i+0.5)*10./N_D;
+    if(pT_D[i]<6.0) v2_D[i] = v2_D_fit->Eval(pT_D[i]);
+    else v2_D[i] = v2_D_fit->Eval(5.99) - (pT_D[i]-6.0)/(10.-6.0)*(v2_D_fit->Eval(5.99)-0.02); // stop at 6 GeV/c, assuming linear decrease to 0.02 @ 10 GeV/c
+    v2_err_D[i] = v2_err(gr_sig_D_MB->Eval(pT_D[i]), v2_D[i], EPRes);
+    v2_D_0[i] = 0.0;
+
+    double mT_D = sqrt(pT_D[i]*pT_D[i]+MassD*MassD);
+    pT_B[i] = sqrt( (mT_D-MassD+MassB)*(mT_D-MassD+MassB) - MassB*MassB );
+    v2_B[i] = v2_D[i];
+  }
+
+  TGraph *gr_D = new TGraph(N_D, pT_D, v2_D);
+  gr_D->SetMarkerSize(1.5);
+  gr_D->SetMarkerColor(4);
+  gr_D->SetMarkerStyle(20);
+  gr_D->SetLineWidth(2.);
+  gr_D->SetLineStyle(2);
+  gr_D->SetLineColor(4);
+
+  TGraph *gr_B = new TGraph(N_B, pT_B, v2_B);
+  gr_B->SetMarkerSize(1.5);
+  gr_B->SetMarkerColor(2);
+  gr_B->SetMarkerStyle(20);
+  gr_B->SetLineWidth(2.);
+  gr_B->SetLineStyle(4);
+  gr_B->SetLineColor(2);
+  
+  TGraphErrors *gr_proj_D = new TGraphErrors(N_D, pT_D, v2_D_0, 0, v2_err_D);
+  gr_proj_D->SetMarkerSize(1.5);
+  gr_proj_D->SetMarkerColor(4);
+  gr_proj_D->SetMarkerStyle(20);
+  gr_proj_D->SetLineWidth(2.);
+  gr_proj_D->SetLineColor(4);
+  
+  for(int i=0;i<N_D_B;i++) {
+    pT_D_B[i] = (i+0.5)*10./N_D_B;
+    v2_D_B[i] = 0.;
+    v2_err_D_B[i] = v2_err(gr_sig_D_B_MB->Eval(pT_D_B[i]), v2_D_B[i], EPRes);
+  }
+
+  TGraph *gr_D_B = new TGraph(N_D_B, pT_D_B, v2_D_B);
+  gr_D_B->SetMarkerSize(1.5);
+  gr_D_B->SetMarkerColor(2);
+  gr_D_B->SetMarkerStyle(20);
+  gr_D_B->SetLineWidth(2.);
+  gr_D_B->SetLineStyle(2);
+  gr_D_B->SetLineColor(2);
+
+  TGraphErrors *gr_proj_D_B = new TGraphErrors(N_D_B-2, pT_D_B+2, v2_D_B+2, 0, v2_err_D_B+2);
+  gr_proj_D_B->SetMarkerSize(1.5);
+  gr_proj_D_B->SetMarkerColor(2);
+  gr_proj_D_B->SetMarkerStyle(20);
+  gr_proj_D_B->SetLineWidth(2.);
+  gr_proj_D_B->SetLineColor(2);
+  
+  TCanvas *c1 = new TCanvas("c1", "c1",0,0,800,600);
+  gStyle->SetOptFit(0);
+  gStyle->SetOptStat(0);
+  gStyle->SetEndErrorSize(0.01);
+  c1->SetFillColor(10);
+  c1->SetBorderMode(0);
+  c1->SetBorderSize(2);
+  c1->SetFrameFillColor(0);
+  c1->SetFrameBorderMode(0);
+  
+  // c1->SetGridx();
+  // c1->SetGridy();
+  c1->SetTickx();
+  c1->SetTicky();
+  
+  //  c1->SetLogx();
+  //  c1->SetLogy();
+  
+  c1->SetLeftMargin(0.13);
+  c1->SetBottomMargin(0.16);
+  c1->SetTopMargin(0.02);
+  c1->SetRightMargin(0.06);
+  
+  double x1 = 0.1;
+  double x2 = 11;
+  double y1 = -0.04;
+  double y2 = 0.21;
+
+  TH1D *d0 = new TH1D("d0","",1,x1,x2);
+  d0->SetMinimum(y1);
+  d0->SetMaximum(y2);
+  d0->GetXaxis()->SetNdivisions(208);
+  d0->GetXaxis()->CenterTitle();
+  d0->GetXaxis()->SetTitle("Transverse Momentum p_{T} (GeV/c)");
+  d0->GetXaxis()->SetTitleOffset(1.2);
+  d0->GetXaxis()->SetTitleSize(0.06);
+  d0->GetXaxis()->SetLabelOffset(0.01);
+  d0->GetXaxis()->SetLabelSize(0.045);
+  d0->GetXaxis()->SetLabelFont(42);
+  d0->GetXaxis()->SetTitleFont(42);
+  d0->GetYaxis()->SetNdivisions(505);
+  d0->GetYaxis()->CenterTitle();
+  d0->GetYaxis()->SetTitle("v_{2} (0-80%)");
+  d0->GetYaxis()->SetTitleOffset(1.0);
+  d0->GetYaxis()->SetTitleSize(0.06);
+  d0->GetYaxis()->SetLabelOffset(0.005);
+  d0->GetYaxis()->SetLabelSize(0.045);
+  d0->GetYaxis()->SetLabelFont(42);
+  d0->GetYaxis()->SetTitleFont(42);
+  d0->SetLineWidth(2);
+  d0->Draw("c");
+
+  TLine *l0 = new TLine(x1,0,x2,0);
+  l0->SetLineWidth(2);
+  l0->SetLineColor(2);
+  l0->SetLineStyle(2);
+  l0->Draw("same");
+
+  TLine *l1 = new TLine(x1,y1,x2,y1);
+  l1->SetLineWidth(3);
+  l1->Draw("same");
+  TLine *l2 = new TLine(x1,y2,x2,y2);
+  l2->SetLineWidth(3);
+  l2->Draw("same");
+  TLine *l3 = new TLine(x1,y1,x1,y2);
+  l3->SetLineWidth(3);
+  l3->Draw("same");
+  TLine *l4 = new TLine(x2,y1,x2,y2);
+  l4->SetLineWidth(3);
+  l4->Draw("same");
+
+  gr_D->Draw("c");
+  gr_B->Draw("c");
+  gr_proj_D->Draw("p");
+  gr_proj_D_B->Draw("p");
+
+  TLegend *leg = new TLegend(0.58, 0.66, 0.95, 0.94);
+  leg->SetFillColor(10);
+  leg->SetFillStyle(10);
+  leg->SetLineStyle(4000);
+  leg->SetLineColor(10);
+  leg->SetLineWidth(0.);
+  leg->SetTextFont(42);
+  leg->SetTextSize(0.04);
+  leg->AddEntry(gr_D,"D-meson","l");
+  leg->AddEntry(gr_B,"B-meson (m_{T} scaling)","l");
+  leg->AddEntry(gr_proj_D,"Uncert. of D^{0}","p");
+  leg->AddEntry(gr_proj_D_B,"Uncert. of D^{0} from B","p");
+  leg->Draw();
+
+  TLatex *tex = new TLatex(0.7, 0.18, "Au + Au @ 200 GeV");
+  tex->SetTextFont(42);
+  tex->SetTextSize(0.05);
+  tex->Draw("same");
+  
+  TLatex *tex = new TLatex(0.7, 0.155, "  100B MB");
+  tex->SetTextFont(42);
+  tex->SetTextSize(0.05);
+  tex->Draw("same");
+
+  c1->SaveAs("fig/v2_proj_100B.eps");
+  c1->SaveAs("fig/v2_proj_100B.png");
+  
+}
+

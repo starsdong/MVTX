@@ -1,0 +1,75 @@
+
+*** These modified files were found in JOE when it aborted on Tue Apr 17 23:43:08 2018
+*** JOE was aborted by UNIX signal 15
+
+*** File '(Unnamed)'
+square
+
+*** File '(Unnamed)'
+root
+
+*** File 'D0v1_RHIC_Greco.txt'
+-2		-0.00649541	
+-1.80023	-0.00781651	
+-1.60045	-0.00891743	
+-1.40068	-0.00957798	
+-1.20091	-0.0092844	
+-1.00114	-0.00752294	
+-0.801362	-0.00576147	
+-0.601589	-0.00414679	
+-0.401816	-0.00253211	
+-0.202043	-0.00106422	
+-0.00227015	-3.66972e-05	
+0.202043	0.00143119	
+0.401816	0.00311927	
+0.601589	0.0053211	
+0.801362	0.00759633	
+1.00114		0.00906422	
+1.20091		0.00943119	
+1.40068		0.00869725	
+1.60045		0.00737615	
+1.80023		0.00568807	
+2		0.00377982	
+
+*** File '(Unnamed)'
+_0726
+
+
+    
+    
+    
+    
+    
+    
+e
+
+*** File '(Unnamed)'
+data7
+data7
+data6
+xpoint
++/-
++/-
+×10
+cpp
+*.C
+mMinuit
+
+*** File '(Unnamed)'
+time_mixer_num.log
+time_mixer_num.log
+time_simu_num.log
+tools/joe-4.6/rc/ftyperc
+vtxFit.C
+fitRes.C
+fitRes.C
+fitRes.C
+fitRes.C
+fitRes.C
+D0v1_RHIC_Greco.txt
+
+*** File '* Startup Log *'
+Processing '/Users/starsdong/etc/joe/joerc'...
+Processing '/Users/starsdong/etc/joe/ftyperc'...
+Finished processing /Users/starsdong/etc/joe/ftyperc
+Finished processing /Users/starsdong/etc/joe/joerc
