@@ -10,7 +10,8 @@ void fitBL(const Int_t run = 46667)
   const Double_t R[NL] = {25.233, 33.355, 41.478};
 
   TH1F *hOccu[NL];
-  TFile *fin = new TFile(Form("root/HIST_PHYSICS_run2pp_new_2024p001-000%d-0000.root",run));
+  //  TFile *fin = new TFile(Form("root/HIST_PHYSICS_run2pp_new_2024p001-000%d-0000.root",run));
+  TFile *fin = new TFile(Form("root/HIST_DST_TRKR_CLUSTER_run2pp_new_2024p004-000%d-9000.root",run));
   for(int i=0;i<NL;i++) {
     hOccu[i] = (TH1F*)fin->Get(Form("h_MvtxClusterQA_clusterPhi_l%d",i));
   }

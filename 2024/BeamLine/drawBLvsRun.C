@@ -4,7 +4,7 @@
 void drawBLvsRun()
 {
   style();
-  const Int_t NMAX = 10;
+  const Int_t NMAX = 33;
   const Int_t NL = 3;
   Int_t Run[NMAX];
   Double_t index[NMAX], runId[NMAX];
@@ -59,7 +59,7 @@ void drawBLvsRun()
   c1->SetLeftMargin(0.14);
   c1->Draw();
   
-  double x1 = -0.5;
+  double x1 = -2;
   double x2 = NMAX;
   double y1 = -6.;
   double y2 = 3.;
@@ -96,8 +96,8 @@ void drawBLvsRun()
     drawText(index[i]-0.1, y1-1.6, Form("%d",Run[i]), 42, 0.045, 75);
   }
 
-  drawText(-0., x0[0][0], "X_{0}", 52, 0.055); 
-  drawText(-0., y0[0][0], "Y_{0}", 52, 0.055);
+  drawText(-1, x0[0][0], "X_{0}", 52, 0.055); 
+  drawText(-1, y0[0][0], "Y_{0}", 52, 0.055);
 
   TLegend *leg1 = new TLegend(0.8, 0.45, 0.84, 0.65);
   leg1->SetLineColor(10);
