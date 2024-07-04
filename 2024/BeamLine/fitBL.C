@@ -10,17 +10,26 @@ void fitBL(const Int_t run = 46667)
   const Double_t R[NL] = {25.233, 33.355, 41.478};
 
   TH1F *hOccu[NL];
-  //  TFile *fin = new TFile(Form("root/HIST_PHYSICS_run2pp_new_2024p001-000%d-0000.root",run));
+//  TFile *fin = new TFile(Form("root/HIST_PHYSICS_run2pp_new_2024p001-000%d-0000.root",run));
   TFile *fin = new TFile(Form("root/HIST_DST_TRKR_CLUSTER_run2pp_new_2024p004-000%d-9000.root",run));
   for(int i=0;i<NL;i++) {
     hOccu[i] = (TH1F*)fin->Get(Form("h_MvtxClusterQA_clusterPhi_l%d",i));
   }
+  if(!hOccu[0] && !hOccu[1] && !hOccu[2]) {
+    cout << " No MVTX Cluster QA histograms! Return! " << endl;
+    return;
+  }
+  if(hOccu[0]->GetEntries()<10 && hOccu[1]->GetEntries()<10 && hOccu[2]->GetEntries()<10) {
+    cout << " No Entries in MVTX Cluster QA histograms! Return! " << endl;
+    return;
+  }
 
+  
   TF1 *func[NL];
   TF1 *funcm[NL];
   for(int i=0;i<NL;i++) {
     func[i] = new TF1(Form("func_%d",i),"[0]*(1.+2*[1]/[3]*cos(x-[2]))",-TMath::Pi(),TMath::Pi());
-    //    func[i] = new TF1(Form("func_%d",i),"[0]/(1.-2*[1]/[3]*cos(x-[2])+[1]*[1]/[3]/[3]*cos(x-[2])*cos(x-[2]))",-TMath::Pi(),TMath::Pi());   // second order
+    //    func[i] = new TF1(Form("func_%d",i),"[0]/(1.+2*[1]/[3]*cos(x-[2])-[1]*[1]/[3]/[3]*cos(x-[2])*cos(x-[2]))",-TMath::Pi(),TMath::Pi());   // second order
     funcm[i] = new TF1(Form("funcm_%d",i),"[0]*(1.+2*[1]/[3]*cos(x)+2*[2]/[3]*sin(x))",-TMath::Pi(),TMath::Pi());
   }
 
@@ -53,7 +62,7 @@ void fitBL(const Int_t run = 46667)
     hOccu[i]->Draw();
 
     // pre-fit, remove ineffecient entries
-    func[i]->SetParameters(hOccu[i]->GetBinContent(1), 4.0, TMath::Pi(), R[i],0);
+    func[i]->SetParameters(hOccu[i]->GetBinContent(1), 4.0, TMath::Pi(), R[i]);
     func[i]->FixParameter(1, 4.0);
     func[i]->FixParameter(2, 3.0);
     func[i]->FixParameter(3, R[i]);
@@ -67,9 +76,8 @@ void fitBL(const Int_t run = 46667)
 	hOccu[i]->SetBinError(j+1, 0);
       }
     }
-    //    continue;
 
-    func[i]->SetParameters(hOccu[i]->GetBinContent(1), 4.0, TMath::Pi(), R[i],0);
+    func[i]->SetParameters(hOccu[i]->GetBinContent(1), 4.0, TMath::Pi(), R[i]);
     func[i]->ReleaseParameter(1);
     func[i]->ReleaseParameter(2);
     func[i]->FixParameter(3, R[i]);
@@ -84,15 +92,17 @@ void fitBL(const Int_t run = 46667)
       }
     }
     
-    func[i]->SetParameters(hOccu[i]->GetBinContent(1), 4.0, TMath::Pi(), R[i],0);
+    func[i]->SetParameters(hOccu[i]->GetBinContent(1), 4.0, TMath::Pi(), R[i]);
     func[i]->ReleaseParameter(1);
     func[i]->ReleaseParameter(2);
     func[i]->FixParameter(3, R[i]);
     hOccu[i]->Fit(Form("func_%d", i), "R", "", -3.1, 3.1);
 
+    //    continue;
+
     funcm[i]->SetParameters(hOccu[i]->GetBinContent(1), -4.0, 0, R[i],0);
-    funcm[i]->SetParLimits(1, -5.0, -3.0);
-    funcm[i]->SetParLimits(2, -0.5, 1.5);
+    funcm[i]->SetParLimits(1, -6.0, -2.0);
+    funcm[i]->SetParLimits(2, -1, 3);
     funcm[i]->FixParameter(3, R[i]);
     hOccu[i]->Fit(Form("funcm_%d", i), "R", "", -3.1, 3.1);
 
@@ -118,6 +128,8 @@ void fitBL(const Int_t run = 46667)
     c1->Update();
   }
 
+  if(!hOccu[0]) return;
+  
   c1->Update();
   c1->SaveAs(Form("fig/MVTX_BL_%d.pdf",run));
   c1->SaveAs(Form("fig/MVTX_BL_%d.png",run));
