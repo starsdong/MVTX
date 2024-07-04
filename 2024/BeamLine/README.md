@@ -1,3 +1,7 @@
+![Beam line position w.r.t. MVTX center vs. run](fig/MVTX_BL_run.png)
+
+===== Instructions to files in this directory =====
+
 Use MVTX cluster phi dependence distributions to calibrate beam position w.r.t the MVTX center.
 
 1) Input needed:
