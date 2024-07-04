@@ -4,7 +4,7 @@
 void drawBLvsRun()
 {
   style();
-  const Int_t NMAX = 200;
+  const Int_t NMAX = 10000;
   const Int_t NL = 3;
   Int_t Run[NMAX];
   Double_t index[NMAX], runId[NMAX];
@@ -55,12 +55,12 @@ void drawBLvsRun()
     gr_phi0[i]->SetName("gr_phi0");
   }
   
-  TCanvas *c1 = new TCanvas("c1","",1000,600);
-  c1->SetLeftMargin(0.14);
+  TCanvas *c1 = new TCanvas("c1","",1200,600);
+  c1->SetLeftMargin(0.1);
   c1->Draw();
   
-  double x1 = -10;
-  double x2 = NMAX;
+  double x1 = -N*0.1;
+  double x2 = N*1.25;
   double y1 = -6.;
   double y2 = 3.;
   TH1D *h0 = new TH1D("h0","",1,x1,x2);
@@ -68,9 +68,9 @@ void drawBLvsRun()
   h0->SetMinimum(y1);
   h0->GetXaxis()->SetTickLength(0.001);
   h0->GetXaxis()->SetLabelOffset(999.);
-  h0->GetXaxis()->SetTitleOffset(0.6);
+  h0->GetXaxis()->SetTitleOffset(0.5);
   h0->GetXaxis()->SetTitle("Run ID");
-  h0->GetYaxis()->SetTitleOffset(0.9);
+  h0->GetYaxis()->SetTitleOffset(0.6);
   h0->GetYaxis()->SetTitle("Beam Offset (mm)");
   h0->Draw("c");
 
@@ -93,19 +93,19 @@ void drawBLvsRun()
   }
 
   for(int i=0;i<N;i++) {
-    if(i%10==0) drawText(index[i]-0.1, y1-1.6, Form("%d",Run[i]), 42, 0.045, 75);
+    if(i%10==0) drawText(index[i]-0.1, y1-1.6, Form("%d",Run[i]), 42, 0.04, 75);
   }
 
-  drawText(-7, x0[0][0], "X_{0}", 52, 0.055); 
-  drawText(-7, y0[0][0], "Y_{0}", 52, 0.055);
+  drawText(-N*0.07, x0[0][0], "X_{0}", 52, 0.055); 
+  drawText(-N*0.07, y0[0][0], "Y_{0}", 52, 0.055);
 
-  TLegend *leg1 = new TLegend(0.8, 0.45, 0.84, 0.65);
+  TLegend *leg1 = new TLegend(0.82, 0.45, 0.86, 0.65);
   leg1->SetLineColor(10);
   for(int i=NL-1;i>=0;i--) {
     leg1->AddEntry(gr_x0[i], " ", "p");
   }
   leg1->Draw();
-  TLegend *leg2 = new TLegend(0.82, 0.45, 0.96, 0.65);
+  TLegend *leg2 = new TLegend(0.84, 0.45, 0.96, 0.65);
   leg2->SetLineColor(10);
   leg2->SetTextSize(0.04);
   for(int i=NL-1;i>=0;i--) {
