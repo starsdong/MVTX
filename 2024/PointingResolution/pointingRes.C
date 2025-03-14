@@ -28,7 +28,7 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
   const Int_t Ntrk = 4;  // mean number of tracks per event
   const Int_t NTMax = 50;  // 100 tracks maximum per event
   const Double_t pTres = 0.1;  // 1/pT or pT resolution
-  const Double_t pT_th = 0.5;  // pT threshold for vtx
+  const Double_t pT_th = 0.1;  // pT threshold for vtx
   const Int_t nTrkVtx_th = 3;  // number of tracks for vtx
   gRandom = new TRandom3;
   
