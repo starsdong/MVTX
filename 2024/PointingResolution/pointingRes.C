@@ -25,7 +25,7 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
   const Int_t kColor[NP] = {kRed, kBlue};
 
   const Int_t Nevt = 1e5;
-  const Int_t Ntrk = 4;  // mean number of tracks per event
+  const Int_t Ntrk = 5;  // mean number of tracks per event
   const Int_t NTMax = 50;  // 100 tracks maximum per event
   const Double_t pTres = 0.1;  // 1/pT or pT resolution
   const Double_t pT_th = 0.1;  // pT threshold for vtx
@@ -518,8 +518,8 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
   TGraphErrors *gr_dcavtxwt_rc = new TGraphErrors((TH1D *)gDirectory->Get(Form("DCAVtxWtRc_pion_2")));
 
 
-  drawText(3.0,-1500,Form("Wt. Vtx: NTrk>= %d, p_{T}>%4.2f", nTrkVtx_th, pT_th),42,0.065);
-  drawText(3.0,-2100,Form("Track: #sigma_{p_{T}}/p_{T} = %d %%", (int)(pTres*100)),42,0.065);
+  drawText(2.5,-1500,Form("Wt. Vtx: NTrk>= %d, p_{T}>%4.2f", nTrkVtx_th, pT_th),42,0.065);
+  drawText(2.5,-2100,Form("Track: #sigma_{p_{T}}/p_{T} = %d %%", (int)(pTres*100)),42,0.065);
   
   c10->Update();
   c10->SaveAs(Form("fig/DCA_RcVtxWt_%s.pdf",OutString.Data()));
@@ -549,8 +549,8 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
   leg11->AddEntry(gr_dcavtxwt_mc," MC p_{T}", "p");
   leg11->Draw();
 
-  drawText(0.5,5.0,Form("Wt. Vtx: NTrk>= %d, p_{T}>%4.2f", nTrkVtx_th, pT_th));
-  drawText(0.5,2.0,Form("Track: #sigma_{p_{T}}/p_{T} = %d %%", (int)(pTres*100)));
+  drawText(0.5,3.5,Form("Wt. Vtx: NTrk>= %d, p_{T}>%4.2f", nTrkVtx_th, pT_th));
+  drawText(0.5,1.5,Form("Track: #sigma_{p_{T}}/p_{T} = %d %%", (int)(pTres*100)));
 
   c11->Update();
   c11->SaveAs(Form("fig/DCA_RcVtxWt_res_%s.pdf",OutString.Data()));
