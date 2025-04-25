@@ -3,7 +3,7 @@
 #include "/Users/starsdong/work/work/fitfun/Levy.C"
 #include "TRandom3.h"
 
-void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
+void pointingRes(const Int_t flag = 1, const Double_t nu = 1.0)
 // flag: 1 - student-T sampling,
 // flag: 0 - Gaussian sampling
 {
@@ -13,7 +13,7 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
   const Char_t *ConfigName[NConf] = {"Gauss","StudentT"};
   TString OutString;
   if(flag) {
-    OutString = Form("%s_nu_%d",ConfigName[flag],nu);
+    OutString = Form("%s_nu_%3.1f",ConfigName[flag],nu);
   } else {
     OutString = Form("%s",ConfigName[flag]);
   }
@@ -24,14 +24,17 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
   const Double_t Mass[NP] = {0.13957, 0.93827};
   const Int_t kColor[NP] = {kRed, kBlue};
 
-  const Int_t Nevt = 1e5;
+  const Int_t Nevt = 1e7;
   const Int_t Ntrk = 5;  // mean number of tracks per event
   const Int_t NTMax = 50;  // 100 tracks maximum per event
   const Double_t pTres = 0.1;  // 1/pT or pT resolution
   const Double_t pT_th = 0.1;  // pT threshold for vtx
-  const Int_t nTrkVtx_th = 3;  // number of tracks for vtx
+  const Int_t nTrkVtx_th = 5;  // number of tracks for vtx
   gRandom = new TRandom3;
-  
+
+
+  TF1 *fun_res = new TF1("fun_res","sqrt([0]*[0]/x/x+[1]*[1])",0.4,10.);
+  fun_res->SetParameters(20,10);
   ////////////////////////////////
   // Read in spectra data
   ////////////////////////////////
@@ -48,7 +51,7 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
   ////////////////////////////////
   // Two options for pT and DCA smearing
   ////////////////////////////////
-  TF1 *fStudentT = new TF1("studentT",Form("ROOT::Math::tdistribution_pdf(x,%d)",nu),-10.,10.);
+  TF1 *fStudentT = new TF1("studentT",Form("ROOT::Math::tdistribution_pdf(x,%f)",nu),-10.,10.);
   TF1 *fGauss = new TF1("gauss","gaus",-10.,10.);
   fGauss->SetParameters(1,0,1);
 
@@ -115,6 +118,7 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
   d1a->Draw();
 
   gr_DCA->Draw("cp");
+  gr_DCA->Fit("fun_res","R");
 
   c1a->Update();
   c1a->SaveAs(Form("fig/resolution_simu_%s.pdf",OutString.Data()));
@@ -174,6 +178,8 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
 
   TH2D *hDCAvsNTrk = new TH2D("DCAvsNTrk","",50,0,50,1000,-2500,2500);
   TH2D *hDCAWtvsNTrk = new TH2D("DCAWtvsNTrk","",50,0,50,1000,-2500,2500);
+
+  TH2D *hDCA2 = new TH2D("DCA2","",50,0,5.0,1000,-2500,2500);
   
   for(int i=0;i<Nevt;i++) {
     Int_t nTrk = 0;
@@ -212,16 +218,31 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
 	  hDCARc[j]->Fill(pT_rec[j][it], dca[j][it]);      
       } // end j
     } // end it
+
+    // Two track DCA
+    for(int i1=0;i1<nTrk-1;i1++) {
+      for(int i2=i1+1;i2<nTrk;i2++) {
+	if(fabs(pT_rec[0][i1]-pT_rec[0][i2])<0.2) {
+	  double pTave = 0.5*(pT_rec[0][i1]+pT_rec[0][i2]);
+	  hDCA2->Fill(pTave, dca[0][i1]-dca[0][i2]);
+	}
+      }
+    }
 	  
     double vtx = 0.;
-    double vtxwt = 0., wt = 0.;  // 1/sigma^2 weighted 
+    double vtxwt = 0., wt = 0.;  // 1/sigma^2 weighted
+    double vtxpair = 0.;
+    int npair = 0;
     int ntrk_used = 0;
+    double dcaPass[NTMax];
     for(int it=0;it<nTrk;it++) {
       if(pT_rec[0][it]>pT_th) {
 	vtx += dca[0][it];
 	double dcaRes = gr_DCA->Eval(pT[0][it]);
 	vtxwt += dca[0][it]/dcaRes/dcaRes;
 	wt += 1./dcaRes/dcaRes;
+
+	dcaPass[ntrk_used] = dca[0][it];
 	ntrk_used++;
       }
     }
@@ -231,10 +252,19 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
 
       vtxwt /= wt;
       hDCAWtvsNTrk->Fill(ntrk_used, vtxwt);
+
+      // forming pair - sPHENIX simple vtx algorithm
+      for(int i1=0;i1<ntrk_used;i1++) {
+	for(int i2=0;i2<ntrk_used;i2++) {
+	  if(i1==i2) continue;
+	  
+	}
+      }
     } else {
       vtx = -999.;
       vtxwt = -999.;
     }
+
 
 
     if(ntrk_used>=nTrkVtx_th) {
@@ -605,7 +635,7 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
   ////////////////////////////////
   // Output histograms
   ////////////////////////////////
-  TFile *fout = new TFile("output.root","recreate");
+  TFile *fout = new TFile(Form("output_%s.root",OutString.Data()),"recreate");
   for(int i=0;i<NP;i++) {
     hPtMc[i]->Write();
     hPtRc[i]->Write();
@@ -622,6 +652,7 @@ void pointingRes(const Int_t flag = 1, const Int_t nu = 1)
   gr_dca_rc->Write();
   gr_dcavtx_mc->Write();
   gr_dcavtx_rc->Write();
+  hDCA2->Write();
   
   fout->Close();
   
